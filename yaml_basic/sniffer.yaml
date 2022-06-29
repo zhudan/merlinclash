@@ -1,0 +1,14 @@
+sniffer:
+  enable: true
+  sniffing:
+    - tls
+    - http
+  skip-domian:
+    - 'Mijia Cloud'
+    - '+.apple.com'
+  port-whitelist:
+    - 80
+    - 443
+    - 8000-9000
+# force-domain:
+#   - '+'  
