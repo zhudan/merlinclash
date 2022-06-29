@@ -18,7 +18,7 @@ get(){
 	echo $a
 }
 
-dbus set merlinclash_dnsmasqplan="overwrite"
+dbus set merlinclash_dnsmasqplan=""
 mcenable=$(get merlinclash_enable)
 mkenable=$(get merlinclash_koolproxy_enable)
 dnsmasqplan=$(get merlinclash_dnsmasqplan)
