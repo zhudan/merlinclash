@@ -2097,6 +2097,12 @@ pre_netflix_nslookup(){
 }
 
 creat_router_ipset(){
+	#dnsmasq分流，dns后置方案
+	if [ "$dnshijacksel" == "rear" ];then
+	  echo_date 后置dns方案，跳过
+	  return 0
+  fi
+
 	rm -rf /tmp/clash_router.txt
 	rm -rf /koolshare/merlinclash/conf/clash_router_ipset.conf >/dev/null 2>&1
 	rm -rf /jffs/configs/dnsmasq.d/clash_router_ipset.conf >/dev/null 2>&1
@@ -2139,6 +2145,11 @@ creat_router_ipset(){
 	#fi
 }
 load_nat() {
+	#dnsmasq分流，dns后置方案
+	if [ "$dnshijacksel" == "rear" ];then
+	  echo_date 后置dns方案，跳过
+	  return 0
+  fi
 	nat_ready=$(iptables -t nat -L PREROUTING -v -n --line-numbers | grep -v PREROUTING | grep -v destination)
 	i=120
 	until [ -n "$nat_ready" ]; do
@@ -4711,14 +4722,14 @@ apply_mc() {
 	pre_netflix_nslookup
 	echo_date ----------------- 预解析NETFLIX和DISNEY+ 结束-------------------- >> $LOG_FILE
 	echo_date ""
-#	echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
-#	creat_router_ipset
-#	echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
-#	echo_date ""
-#	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
-#	[ "$closeproxy" == "0" ] && load_nat
-#	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
-#	echo_date ""
+	echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
+	creat_router_ipset
+	echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
+	echo_date ""
+	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
+	[ "$closeproxy" == "0" ] && load_nat
+	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
+	echo_date ""
 	#----------------------------------KCP进程--------------------------------
 	echo_date ---------------------- KCP设置检查区 开始 ------------------------ >> $LOG_FILE
 	start_kcp
@@ -5056,14 +5067,14 @@ start_nat)
 		pre_netflix_nslookup
 		echo_date ----------------- 预解析NETFLIX和DISNEY+ 结束-------------------- >> $LOG_FILE
 		echo_date ""
-#		echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
-#		creat_router_ipset
-#		echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
-#		echo_date ""
-#		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
-#		[ "$closeproxy" == "0" ] && load_nat
-#		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
-#		echo_date ""
+		echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
+		creat_router_ipset
+		echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
+		echo_date ""
+		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
+		[ "$closeproxy" == "0" ] && load_nat
+		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
+		echo_date ""
 		restart_dnsmasq
 		echo_date "============= Merlin Clash iptable 重写完成=============" >> $LOG_FILE
 		rm -rf ${lcfile1} 
