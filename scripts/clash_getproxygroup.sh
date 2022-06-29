@@ -64,6 +64,7 @@ if [ -s "$yamlpath" ] ; then
 			echo "AND" >> /tmp/upload/proxytype.txt
 			echo "OR" >> /tmp/upload/proxytype.txt
 			echo "NOT" >> /tmp/upload/proxytype.txt
+			echo "IN-TYPE" >> /tmp/upload/proxytype.txt
 			echo "GEOSITE" >> /tmp/upload/proxytype.txt
 		fi
 		

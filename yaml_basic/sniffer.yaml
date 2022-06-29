@@ -3,7 +3,7 @@ sniffer:
   sniffing:
     - tls
     - http
-  skip-domian:
+  skip-domain:
     - 'Mijia Cloud'
     - '+.apple.com'
   port-whitelist:

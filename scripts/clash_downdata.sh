@@ -58,6 +58,7 @@ backup_conf(){
 	dbus list merlinclash_sniffer |  sed 's/=/=\"/' | sed 's/$/\"/g'|sed 's/^/dbus set /' >> /tmp/clash_backup/clash_databackup.sh #sniffer设置
 	dbus list merlinclash_geoip |  sed 's/=/=\"/' | sed 's/$/\"/g'|sed 's/^/dbus set /' >> /tmp/clash_backup/clash_databackup.sh #geoiptype
 	dbus list merlinclash_interval |  sed 's/=/=\"/' | sed 's/$/\"/g'|sed 's/^/dbus set /' >> /tmp/clash_backup/clash_databackup.sh #merlinclash_interval
+	dbus list merlinclash_sub |  sed 's/=/=\"/' | sed 's/$/\"/g'|sed 's/^/dbus set /' >> /tmp/clash_backup/clash_databackup.sh #merlinclash_sub
 	if [ "$mcflag" != "HND" ]; then
 		dbus list merlinclash_cdn_cbox |  sed 's/=/=\"/' | sed 's/$/\"/g'|sed 's/^/dbus set /' >> /tmp/clash_backup/clash_databackup.sh #384 CDN加速订阅开关
 	fi

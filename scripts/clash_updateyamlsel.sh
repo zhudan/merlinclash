@@ -6,21 +6,27 @@ alias echo_date='echo 【$(date +%Y年%m月%d日\ %X)】:'
 
 LOGFILE=/tmp/upload/merlinclash_log.txt
 LOG_FILE=/tmp/upload/merlinclash_updateyaml.txt
+Regularlog=/tmp/upload/merlinclash_regular.log
 get(){
 	a=$(echo $(dbus get $1))
 	a=$(echo $(dbus get $1))
 	echo $a
 }
-yamlname=$(get merlinclash_delyamlsel)
+if [ -n "$3" ]; then
+	yamlname=$(get merlinclash_yamlsel)
+else
+	yamlname=$(get merlinclash_delyamlsel)
+fi
 yamlsel=$(get merlinclash_yamlsel)
 #配置文件路径
 yamlpath=/koolshare/merlinclash/yaml_use/$yamlname.yaml
-
 filename=/koolshare/merlinclash/yaml_bak/subscription.txt
 rm -rf $LOG_FILE
 mcflag=$(get merlinclash_flag)
+mcenable=$(get merlinclash_enable)
 
 update_yaml_sel(){
+
 	dbus set merlinclash_updateflag="0"
 	echo_date "待更新的配置文件为：$yamlname，日志文件位置为:$LOG_FILE" >> $LOGFILE
 	echo_date "待更新的配置文件为：$yamlname，日志文件位置为:$LOG_FILE" >> $LOG_FILE
@@ -72,7 +78,7 @@ update_yaml_sel(){
 				elif [ "$subscription_type" == "8" ]; then
 					urlinilink=$(echo $line | grep -o "\"url\".*"|awk -F\" '{print $4}')
 				else
-					echo_date "参数超范围" >> $Regularlog
+					echo_date "参数超范围" >> $LOGFILE
 				fi
 				echo_date "-----------------------------------------------" >> $LOGFILE
 				echo_date "当前更新配置名：$upname" >> $LOGFILE
@@ -103,13 +109,13 @@ update_yaml_sel(){
 					#名字带前缀，先去除前缀
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
-					echo_date "本地SC_小白订阅定时更新" >> $Regularlog
+					echo_date "本地SC_小白订阅手动更新" >> $LOGFILE
 					upname=$(echo ${upname#*_}) 
 					/bin/sh /koolshare/scripts/clash_online_yaml_2.sh "$upname" "$subscription_type" "$merlinc_link"
 					sleep 3s
 					;;
 				3)	#384_小白订阅
-					echo_date "ACL4SSR_小白订阅定时更新" >> $Regularlog
+					echo_date "ACL4SSR_小白订阅手动更新" >> $LOGFILE
 					#名字带前缀，先去除前缀
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
@@ -119,7 +125,7 @@ update_yaml_sel(){
 					;;
 				4)	#HND_SC订阅
 					#名字带前缀，先去除前缀
-					echo_date "SubConverter本地转换定时更新" >> $Regularlog
+					echo_date "SubConverter本地转换手动更新" >> $LOGFILE
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
 					upname=$(echo ${upname#*_}) 
@@ -127,14 +133,14 @@ update_yaml_sel(){
 					sleep 3s
 					;;
 				5)	#384_ACL订阅
-					echo_date "ACL4SSR转换定时更新" >> $Regularlog
+					echo_date "ACL4SSR转换手动更新" >> $LOGFILE
 					upname=$(echo ${upname#*_}) 
 					/bin/sh /koolshare/scripts/clash_online_yaml4.sh "$upname" "$subscription_type" "$merlinc_link" "$clashtarget" "$acltype" "$emoji" "$udp" "$appendtype" "$sort" "$fnd" "$include" "$exclude" "$scv" "$tfo" "$addr"
 					sleep 3s
 					;;
 				6)	#HND_自定订阅
 					#名字带前缀，先去除前缀
-					echo_date "本地SC自定订阅定时更新" >> $Regularlog
+					echo_date "本地SC自定订阅手动更新" >> $LOGFILE
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
 					upname=$(echo ${upname#*_}) 
@@ -143,7 +149,7 @@ update_yaml_sel(){
 					;;
 				7)	#HND_远程订阅
 					#名字带前缀，先去除前缀
-					echo_date "本地SC远程订阅定时更新" >> $Regularlog
+					echo_date "本地SC远程订阅手动更新" >> $LOGFILE
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
 					upname=$(echo ${upname#*_}) 
@@ -152,7 +158,7 @@ update_yaml_sel(){
 					;;
 				8)	#ACL4SSR远程订阅
 					#名字带前缀，先去除前缀
-					echo_date "ACL4SSR远程订阅定时更新" >> $Regularlog
+					echo_date "ACL4SSR远程订阅手动更新" >> $LOGFILE
 					#name=$(echo $name | awk -F"_" '{print $2}')
 					#从左向右截取第一个 _ 后的字符串
 					upname=$(echo ${upname#*_}) 
@@ -162,6 +168,12 @@ update_yaml_sel(){
 				esac
 				let i=i+1
 			done
+			if [ "$yamlname" == "$yamlsel" ] && [ "$mcenable" == "1" ]; then
+				#订阅后重启clash
+				sleep 2s
+				echo_date "订阅后重启clash" >> $Regularlog
+				/bin/sh /koolshare/merlinclash/clashconfig.sh restart
+			fi
 		else	
 			echo_date "该配置无法进行手动更新" >> $LOGFILE
 			echo_date "该配置无法进行手动更新" >> $LOG_FILE
@@ -184,5 +196,10 @@ case $2 in
 	echo_date "更新配置文件" > $LOG_FILE
 	update_yaml_sel >> $LOGFILE
 	echo BBABBBBC >> $LOGFILE
+	;;
+1)
+	echo "" > $Regularlog
+	echo_date "更新当前配置文件" > $Regularlog
+	update_yaml_sel $3 >> $Regularlog
 	;;
 esac

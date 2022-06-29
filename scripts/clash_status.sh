@@ -16,7 +16,8 @@ get(){
 	echo $a
 }
 yamlname=$(get merlinclash_yamlsel)
-yamlpath=/koolshare/merlinclash/yaml_use/$yamlname.yaml
+#yamlpath=/koolshare/merlinclash/yaml_use/$yamlname.yaml
+yamlpath=/tmp/upload/view.txt
 starttime=$(get merlinclash_clashstarttime)
 lan_ipaddr=$(nvram get lan_ipaddr)
 board_port="9990"

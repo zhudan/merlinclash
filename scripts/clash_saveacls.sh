@@ -6,6 +6,8 @@ eval $(dbus export merlinclash_)
 alias echo_date='echo 【$(date +%Y年%m月%d日\ %X)】:'
 #
 LOG_FILE=/tmp/upload/merlinclash_log.txt
+mkdir -p /koolshare/merlinclash/rule_custom
+
 decode_url_link(){
 	local link=$1
 	local len=$(echo $link | wc -L)
@@ -42,7 +44,7 @@ yamlname=$(get merlinclash_yamlsel)
 
 yamlselchange=$(get merlinclash_yamlselchange)
 savefile(){
-    rm -rf /koolshare/merlinclash/rule_bak/${yamlname}_custom_rule.yaml
+    rm -rf /koolshare/merlinclash/rule_custom/${yamlname}_custom_rule.yaml
     acl_nu=$(get_list merlinclash_acl_type 1 4)
 	num=0
 	if [ -n "$acl_nu" ]; then
@@ -52,14 +54,14 @@ savefile(){
 			lianjie=$(eval echo \$merlinclash_acl_lianjie_$acl)
 			protocol=$(eval echo \$merlinclash_acl_protocol_$acl)
 			
-            echo $type,$content,$lianjie,$protocol >> /koolshare/merlinclash/rule_bak/${yamlname}_custom_rule.yaml
+            echo $type,$content,$lianjie,$protocol >> /koolshare/merlinclash/rule_custom/${yamlname}_custom_rule.yaml
 	    done
 	else
 	    echo "none"
 	fi
 }
 usefile(){
-    if [ -f "/koolshare/merlinclash/rule_bak/${yamlname}_custom_rule.yaml" ]; then
+    if [ -f "/koolshare/merlinclash/rule_custom/${yamlname}_custom_rule.yaml" ]; then
         acl_nu=$(get_list merlinclash_acl_type 1 4)
         echo_date "当配置文件变化且有自定义规则时，先清除自定义规则的值" >> $LOG_FILE
         if [ $yamlselchange == "1" ]; then
@@ -71,8 +73,8 @@ usefile(){
                     dbus remove merlinclash_acl_protocol_$acl
                 done
             fi
-            #当配置文件变化，且存在自定义规则文件时，从rule_bak中的文件字典读取各值重新赋值还原
-            rulecusfile="/koolshare/merlinclash/rule_bak/${yamlname}_custom_rule.yaml"
+            #当配置文件变化，且存在自定义规则文件时，从rule_custom中的文件字典读取各值重新赋值还原
+            rulecusfile="/koolshare/merlinclash/rule_custom/${yamlname}_custom_rule.yaml"
             lines=$(cat $rulecusfile | wc -l)
             echo_date "存在自定义规则：$lines条" >> $LOGFILE
             if [ $lines -gt 0 ]; then

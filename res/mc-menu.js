@@ -887,6 +887,14 @@ function openmcHint(itemNum) {
 		statusmenu += "----------------------------------------------</br>"
 		statusmenu += "更多详细参数请看 https://docs.metacubex.one/function/dns/sniffer</br>"
 		_caption = "Sniffer域名嗅探";		
+	}
+	if (itemNum == 30) {
+		width = "350px";
+		bgcolor = "#CC0066",
+		statusmenu += "<span><b><font color='#CC0066'>TCP连接并发</font></b></br>"
+		statusmenu += "只支持2022.04.09以后编译的Meta核心</br>"
+		statusmenu += "TCP连接并发，如果域名解析结果对应多个IP，并发所有IP，选择握手最快的IP进行连接</br>"
+		_caption = "TCP连接并发";		
 	}	
 	return overlib(statusmenu, OFFSETX, -500, LEFT, STICKY, WIDTH, 'width', CAPTION, _caption, CLOSETITLE, '');
 }

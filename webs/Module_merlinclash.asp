@@ -112,7 +112,7 @@ function get_dbus_data() {
 			E("merlinclash_dnsgoclash").checked = db_merlinclash["merlinclash_dnsgoclash"] == "1";
 			E("merlinclash_dnsclear").checked = db_merlinclash["merlinclash_dnsclear"] == "1";
 			E("merlinclash_sniffer").checked = db_merlinclash["merlinclash_sniffer"] == "1";
-			//E("merlinclash_sniffer_force").checked = db_merlinclash["merlinclash_sniffer_force"] == "1";
+			E("merlinclash_tcp_concurrent").checked = db_merlinclash["merlinclash_tcp_concurrent"] == "1";
 			E("merlinclash_closeproxy").checked = db_merlinclash["merlinclash_closeproxy"] == "1";
 			E("merlinclash_passkpswitch").checked = db_merlinclash["merlinclash_passkpswitch"] == "1";
 			E("merlinclash_dashboardswitch").checked = db_merlinclash["merlinclash_dashboardswitch"] == "1";
@@ -134,7 +134,7 @@ function get_dbus_data() {
 			E("merlinclash_check_xiaobai").checked = db_merlinclash["merlinclash_check_xiaobai"] == "1";
 			E("merlinclash_check_sclocal").checked = db_merlinclash["merlinclash_check_sclocal"] == "1";
 			E("merlinclash_check_yamldown").checked = db_merlinclash["merlinclash_check_yamldown"] == "1";
-			E("merlinclash_check_ssimport").checked = db_merlinclash["merlinclash_check_ssimport"] == "1";
+			//E("merlinclash_check_ssimport").checked = db_merlinclash["merlinclash_check_ssimport"] == "1";
 			if(db_merlinclash["merlinclash_flag"] == "HND"){
 				E("merlinclash_check_upcusrule").checked = db_merlinclash["merlinclash_check_upcusrule"] == "1";
 			}
@@ -218,6 +218,9 @@ function get_dbus_data() {
 			//20210916-
 			if(db_merlinclash["merlinclash_dnsplan"]){					
 				$("input:radio[name='dnsplan'][value="+db_merlinclash["merlinclash_dnsplan"]+"]").attr('checked','true');
+			}
+			if(db_merlinclash["merlinclash_subscribeplan"]){					
+				$("input:radio[name='subscribeplan'][value="+db_merlinclash["merlinclash_subscribeplan"]+"]").attr('checked','true');
 			}
 			//if(db_merlinclash["merlinclash_dnsmasqplan"]){					
 			//	$("input:radio[name='dnsmasqplan'][value="+db_merlinclash["merlinclash_dnsmasqplan"]+"]").attr('checked','true');
@@ -411,11 +414,11 @@ function get_dbus_data() {
 			}else{
 				document.getElementById("clashyamldown").style.display="none"	
 			}
-			if(db_merlinclash["merlinclash_check_ssimport"] == "1"){
-				document.getElementById("ssimport").style.display=""
-			}else{
-				document.getElementById("ssimport").style.display="none"	
-			}
+			//if(db_merlinclash["merlinclash_check_ssimport"] == "1"){
+			//	document.getElementById("ssimport").style.display=""
+			//}else{
+			//	document.getElementById("ssimport").style.display="none"	
+			//}
 			if(db_merlinclash["merlinclash_flag"] == "HND"){
 				if(db_merlinclash["merlinclash_check_upcusrule"] == "1"){
 					document.getElementById("uploadcustomrule").style.display=""
@@ -618,6 +621,7 @@ function apply() {
 	var radio = document.getElementsByName("dnsplan").innerHTML = getradioval(1);
 	var clashmodesel = document.getElementsByName("clashmode").innerHTML = getradioval(3);
 	var cusrulesel = document.getElementsByName("cusruleplan").innerHTML = getradioval(8);
+	
 	if(db_merlinclash["merlinclash_linuxver"] >= 41){
 		var tproxymodesel = document.getElementsByName("tproxymode").innerHTML = getradioval(4);
 	}
@@ -637,7 +641,7 @@ function apply() {
 	db_merlinclash["merlinclash_dnsgoclash"] = E("merlinclash_dnsgoclash").checked ? '1' : '0';
 	db_merlinclash["merlinclash_dnsclear"] = E("merlinclash_dnsclear").checked ? '1' : '0';
 	db_merlinclash["merlinclash_sniffer"] = E("merlinclash_sniffer").checked ? '1' : '0';
-	//db_merlinclash["merlinclash_sniffer_force"] = E("merlinclash_sniffer_force").checked ? '1' : '0';
+	db_merlinclash["merlinclash_tcp_concurrent"] = E("merlinclash_tcp_concurrent").checked ? '1' : '0';
 	db_merlinclash["merlinclash_closeproxy"] = E("merlinclash_closeproxy").checked ? '1' : '0';
 	db_merlinclash["merlinclash_passkpswitch"] = E("merlinclash_passkpswitch").checked ? '1' : '0';
 	db_merlinclash["merlinclash_dashboardswitch"] = E("merlinclash_dashboardswitch").checked ? '1' : '0';
@@ -1896,10 +1900,10 @@ function down_clashrestorerule(arg) {
 				if(arg == 1){
 					var downloadA = document.createElement('a');
 					var josnData = {};
-					var a = "http://"+window.location.hostname+"/_temp/"+"clash_rulebackup.sh"
+					var a = "http://"+window.location.hostname+"/_temp/"+"clash_rulebackup.tar.gz"
 					var blob = new Blob([JSON.stringify(josnData)],{type : 'application/json'});
 					downloadA.href = a;
-					downloadA.download = "clash_rulebackup.sh";
+					downloadA.download = "clash_rulebackup.tar.gz";
 					downloadA.click();
 					window.URL.revokeObjectURL(downloadA.href);
 				}
@@ -1911,15 +1915,16 @@ function upload_clashrestorerule() {
 	var filename = $("#clashrestorerule").val();
 	filename = filename.split('\\');
 	filename = filename[filename.length - 1];
-	var filelast = filename.split('.');
-	filelast = filelast[filelast.length - 1];
-	if (filelast != "sh" ) {
-		alert('备份文件格式不正确！');
+	var lastindex = filename.lastIndexOf('.')
+	filelast = filename.substring(lastindex)
+
+	if (filelast != ".gz" ) {
+		alert('上传备份文件格式不正确！');
 		return false;
 	}
 	E('clashrestorerule_info').style.display = "none";
 	var formData = new FormData();
-	formData.append("clash_rulebackup.sh", $('#clashrestorerule')[0].files[0]);
+	formData.append("clash_rulebackup.tar.gz", $('#clashrestorerule')[0].files[0]);
 	$.ajax({
 		url: '/_upload',
 		type: 'POST',
@@ -2488,6 +2493,14 @@ function getradioval(sel_tmp) {
 		for(i = 0; i< cusruleplan.length; i++){
 			if(cusruleplan[i].checked){
 				return cusruleplan[i].value
+			}
+		}
+	}
+	if (sel_tmp == "9"){
+		var subscribeplan = document.getElementsByName("subscribeplan");
+		for(i = 0; i< subscribeplan.length; i++){
+			if(subscribeplan[i].checked){
+				return subscribeplan[i].value
 			}
 		}
 	}
@@ -3911,6 +3924,8 @@ function unblock_restartjob_save() {
 function regular_subscribe_save() {
 	var dbus_post = {};
 	var id = parseInt(Math.random() * 100000000);
+	var subscribeplansel = document.getElementsByName("subscribeplan").innerHTML = getradioval(9);
+	dbus_post["merlinclash_subscribeplan"]	= db_merlinclash["merlinclash_subscribeplan"] = subscribeplansel;
 	dbus_post["merlinclash_select_regular_subscribe"]	= db_merlinclash["merlinclash_select_regular_subscribe"] = E("merlinclash_select_regular_subscribe").value;
 	dbus_post["merlinclash_select_regular_day"]	= db_merlinclash["merlinclash_select_regular_day"] = E("merlinclash_select_regular_day").value;
 	dbus_post["merlinclash_select_regular_week"] = db_merlinclash["merlinclash_select_regular_week"] = E("merlinclash_select_regular_week").value;
@@ -3958,7 +3973,31 @@ function clash_restart_save() {
 		}
 	});
 }
-
+//导出日志
+function outputlog(){
+	var id = parseInt(Math.random() * 100000000);
+	var postData = {"id": id, "method": "clash_outputlog.sh", "params":[], "fields": ""};
+	$.ajax({
+		type: "POST",
+		async: true,
+		cache:false,
+		url: "/_api/",
+		data: JSON.stringify(postData),
+		dataType: "json",
+		success: function(response) {
+			if(response.result == id){
+				var downloadA = document.createElement('a');
+				var josnData = {};
+				var a = "http://"+window.location.hostname+"/_temp/"+"clash_run.log"
+				var blob = new Blob([JSON.stringify(josnData)],{type : 'application/json'});
+				downloadA.href = a;
+				downloadA.download = "clash_run.log";
+				downloadA.click();
+				window.URL.revokeObjectURL(downloadA.href);
+			}
+		}
+	});
+}
 //提交看门狗设置
 function clash_watchdog_save() {
 	var dbus_post = {};
@@ -5406,8 +5445,7 @@ function refresh_acl_html() {
 function getACLConfigs() {
 	var dict = {};
 	for (var field in db_acl) {
-		names = field.split("_");
-		
+		names = field.split("_");		
 		dict[names[names.length - 1]] = 'ok';
 	}
 	acl_confs = {};
@@ -6605,7 +6643,14 @@ function getaclconfigsmax(){
 																<input  type="button" id="merlinclash_select_clash_restart_save" class="ss_btn" style="vertical-align: middle; cursor:pointer;" onclick="clash_restart_save();" value="保存设置" />
 															</td>
 														</tr>
-														
+														<tr>
+															<th id="btn-outputlog" class="btn btn-primary">二进制日志</th>
+																<td colspan="2">
+																	<div class="merlinclash-btn-outputlog">																	
+																		<a type="button" style="vertical-align: middle; cursor:pointer;" class="ss_btn" id="outputlog" onclick="outputlog()">&nbsp;&nbsp;导出日志&nbsp;&nbsp;</a>														
+																	</div>
+																</td>
+														</tr>
 												</table>
 											</div>
 										</div>
@@ -6623,6 +6668,11 @@ function getaclconfigsmax(){
 																<label >定时订阅</label>
 															</th>
 															<td>
+																<label for="merlinclash_subscribeplan">
+																	<input id="merlinclash_subscribeplan" type="radio" name="subscribeplan" value="all" checked="checked">更新全部配置&nbsp;&nbsp;&nbsp;&nbsp;
+																	<input id="merlinclash_subscribeplan" type="radio" name="subscribeplan" value="used">更新当前配置&nbsp;&nbsp;&nbsp;&nbsp;
+																</label>
+																<p></p>	
 																<select name="select_regular_subscribe" id="merlinclash_select_regular_subscribe" onChange="show_job()"  class="input_option" style="margin:0 0 0 10px;">
 																	<option value="1" selected>关闭</option>
 																	<option value="5">每隔</option>
@@ -6865,7 +6915,7 @@ function getaclconfigsmax(){
 														</td>
 													</tr>
 												</table>
-												<table id="ssimport" style="margin:10px 0px 0px 0px;" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" >																							
+												<!--<table id="ssimport" style="margin:10px 0px 0px 0px;" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" >																							
 													<thead>
 														<tr>
 															<td colspan="2">导入【<a href=" ./Module_shadowsocks.asp" target="_blank"><em style="color:gold;">科学上网</em></a> 】节点</td>
@@ -6883,7 +6933,7 @@ function getaclconfigsmax(){
 															</div>
 															</td>
 													</tr>
-												</table>
+												</table>-->
 												
 												<form name="form1">
 													<table style="margin:10px 0px 0px 0px;" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" >																							
@@ -7405,17 +7455,17 @@ function getaclconfigsmax(){
 																	</label>
 																	</div>
 																</td>
-															</tr>
+														</tr>
 												</table>
 												<table style="margin:10px 0px 0px 0px;" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" id="merlinclash_switch_table">
 													<thead>
 														<tr>
-															<td colspan="2">Sniffer域名嗅探器 -- <a class="hintstyle" href="javascript:void(0);" onclick="openmcHint(29)"><em style="color: gold;">【Netfilx TV客户端建议开启】</em></a></td>
+															<td colspan="2">【Meta核心专属功能】</td>
 														</tr>
 													</thead>
 														<!--预解析奈飞-->
 														<tr id="ena_sniffer">
-															<th>开启sniffing域名嗅探</th>
+															<th>Sniffer域名嗅探 --<a class="hintstyle" href="javascript:void(0);" onclick="openmcHint(29)"><em style="color: gold;">【Netfilx TV客户端建议开启】</em></a></th>
 																<td colspan="2">
 																	<div class="switch_field" style="display:table-cell;float: left;">
 																	<label for="merlinclash_sniffer">
@@ -7433,12 +7483,12 @@ function getaclconfigsmax(){
 																</td>
 															</tr>
 														<!--预解析检查间隔-->
-														<!--<tr>
-															<th>强制全局嗅探</th>
+														<tr>
+															<th>TCP连接并发 --<a class="hintstyle" href="javascript:void(0);" onclick="openmcHint(30)"><em style="color: gold;">【说明】</em></a></th>
 																<td colspan="2">
 																	<div class="switch_field" style="display:table-cell;float: left;">
-																		<label for="merlinclash_sniffer_force">
-																			<input id="merlinclash_sniffer_force" type="checkbox" name="sniffer_force" class="switch" style="display: none;">
+																		<label for="merlinclash_tcp_concurrent">
+																			<input id="merlinclash_tcp_concurrent" type="checkbox" name="tcp_concurrent" class="switch" style="display: none;">
 																			<div class="switch_container" >
 																				<div class="switch_bar"></div>
 																				<div class="switch_circle transition_style">
@@ -7448,8 +7498,7 @@ function getaclconfigsmax(){
 																		</label>
 																	</div>
 																</td>	
-																
-														</tr>-->
+														</tr>
 												</table>
 											</div>
 											<!--Merlin Clash自定义参数-->
@@ -8027,7 +8076,7 @@ function getaclconfigsmax(){
 																		</div>
 																	</label>
 																</div>
-																<div style="display:table-cell;float: left;text-align: center;text-align: center;line-height: 30px;">【导入科学节点】</div>
+																<!--<div style="display:table-cell;float: left;text-align: center;text-align: center;line-height: 30px;">【导入科学节点】</div>
 																<div class="switch_field" style="display:table-cell;float: left;">
 																	<label for="merlinclash_check_ssimport">
 																		<input id="merlinclash_check_ssimport" class="switch" type="checkbox" style="display: none;" name="ssimport_check" onchange="functioncheck('merlinclash_check_ssimport')">
@@ -8038,7 +8087,7 @@ function getaclconfigsmax(){
 																			</div>
 																		</div>
 																	</label>
-																</div>
+																</div>-->
 																<div id="upcusrule" style="display:table-cell;float: left;text-align: center;text-align: center;line-height: 30px;">【上传自定订阅】</div>
 																<div id="upcusrulecbox" class="switch_field" style="display:table-cell;float: left;">
 																	<label for="merlinclash_check_upcusrule">

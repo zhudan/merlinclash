@@ -19,12 +19,15 @@ start_online_del(){
     #delpath1=/koolshare/merlinclash
     delpath1=/koolshare/merlinclash/yaml_use
     delpath2=/koolshare/merlinclash/yaml_bak
+    rulepath=/koolshare/merlinclash/rule_bak
     markpath=/koolshare/merlinclash/mark
     marktmp=/tmp/clash/mark
     yamlname=$(get merlinclash_delyamlsel)
 
     rm -rf $delpath1/$yamlname.yaml
     rm -rf $delpath2/$yamlname.yaml
+    rm -rf $rulepath/${yamlname}_rules.yaml
+    rm -rf $rulepath/${yamlname}_custom_rule.yaml
     rm -rf $markpath/${yamlname}.txt
     rm -rf $marktmp/${yamlname}_old.txt
     rm -rf $marktmp/${yamlname}_new.txt

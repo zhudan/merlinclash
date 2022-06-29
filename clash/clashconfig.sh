@@ -1851,6 +1851,7 @@ start_host(){
 }
 #
 start_routingmark(){
+	sed -i '$a' $yamlpath
 	cat /koolshare/merlinclash/yaml_basic/routingmark.yaml >> $yamlpath
 }
 start_remark(){
@@ -4433,12 +4434,17 @@ start_custom(){
 	sni=$(get merlinclash_sniffer)
 	#sni_force=$(get merlinclash_sniffer_force)
 	if [ "$sni" == "1" ]; then
+		#插入换行符免得出错
+		sed -i '$a' $yamlpath
 		cat /koolshare/merlinclash/yaml_basic/sniffer.yaml >> $yamlpath
-	#	if [ "$sni_force" == "1" ]; then
-	#		sed -i "s/force: false/force: true/g" $yamlpath	
-	#	fi
 	fi
-
+	tcpc=$(get merlinclash_tcp_concurrent)
+	#sni_force=$(get merlinclash_sniffer_force)
+	if [ "$tcpc" == "1" ]; then
+		#插入换行符免得出错
+		sed -i '$a' $yamlpath
+		cat /koolshare/merlinclash/yaml_basic/tcp.yaml >> $yamlpath
+	fi
 	#SNIFFER---
 	mcc=$(get merlinclash_custom_cbox)
 	mcp=$(get merlinclash_cus_port)
