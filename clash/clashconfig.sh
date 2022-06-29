@@ -1932,7 +1932,7 @@ creat_ipset() {
 		modprobe ip_set_bitmap_port
 	fi
 
-  #dnsmasq分流
+  #dnsmasq分流，dns后置方案
 	if [ "$dnshijacksel" == "rear" ];then
 	  create_dnsmasq_gfw_ipt
 	  return 0
@@ -4561,6 +4561,7 @@ stop_config(){
 		sh /koolshare/scripts/clash_unblockneteasemusic.sh stop
 	fi
 	dbus set merlinclash_enable="0"
+	del_dnsmasq_gfw
 	restart_dnsmasq
 	kill_process
 	echo_date -------------------- 相关进程结束完毕 -----------------------  >> $LOG_FILE
@@ -5055,14 +5056,14 @@ start_nat)
 		pre_netflix_nslookup
 		echo_date ----------------- 预解析NETFLIX和DISNEY+ 结束-------------------- >> $LOG_FILE
 		echo_date ""
-		echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
-		creat_router_ipset
-		echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
-		echo_date ""
-		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
-		[ "$closeproxy" == "0" ] && load_nat
-		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
-		echo_date ""
+#		echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
+#		creat_router_ipset
+#		echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
+#		echo_date ""
+#		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
+#		[ "$closeproxy" == "0" ] && load_nat
+#		[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
+#		echo_date ""
 		restart_dnsmasq
 		echo_date "============= Merlin Clash iptable 重写完成=============" >> $LOG_FILE
 		rm -rf ${lcfile1} 
