@@ -18,7 +18,7 @@ get(){
 	echo $a
 }
 
-dbus set merlinclash_dnsmasqplan=""
+dbus set merlinclash_dnsmasqplan="overwrite"
 mcenable=$(get merlinclash_enable)
 mkenable=$(get merlinclash_koolproxy_enable)
 dnsmasqplan=$(get merlinclash_dnsmasqplan)
@@ -39,11 +39,11 @@ case $ACTION in
 start)
 	if [ "$mcenable" == "1" ];then
 		if [ "$dnsmasqplan" == "overwrite" ]; then
-			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
+#			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
 
 			sh /koolshare/merlinclash/clashconfig.sh start >> /tmp/upload/merlinclash_log.txt
 		else
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
@@ -54,14 +54,14 @@ start)
 start_nat)
 	if [ "$mcenable" == "1" ];then
 		if [ "$dnsmasqplan" == "overwrite" ]; then
-			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
+#			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
 			if [ "$dnsgoclash" == "1" ]; then
 				sh /koolshare/merlinclash/clashconfig.sh restart >> /tmp/upload/merlinclash_log.txt
 			else
 				sh /koolshare/merlinclash/clashconfig.sh start_nat >> /tmp/upload/merlinclash_log.txt
 			fi
 		else
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
@@ -76,11 +76,11 @@ start)
 	if [ "$mcenable" == "1" ];then
 		echo start >> /tmp/upload/merlinclash_log.txt
 		if [ "$dnsmasqplan" == "overwrite" ]; then
-			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
+#			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
 
 			sh /koolshare/merlinclash/clashconfig.sh restart >> /tmp/upload/merlinclash_log.txt
 		else
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
@@ -89,13 +89,13 @@ start)
 	else
 		#echo stop >> /tmp/upload/merlinclash_log.txt
 		if [ "$dnsmasqplan" == "overwrite" ]; then
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
 			sh /koolshare/merlinclash/clashconfig.sh stop >> /tmp/upload/merlinclash_log.txt
 		else
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
@@ -121,10 +121,10 @@ quicklyrestart)
 	if [ "$mcenable" == "1" ];then
 		echo "快速重启" >> /tmp/upload/merlinclash_log.txt
 		if [ "$dnsmasqplan" == "overwrite" ]; then
-			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
+#			[ ! -L "/jffs/scripts/dnsmasq.postconf" ] && ln -sf /koolshare/merlinclash/conf/dnsmasq.postconf /jffs/scripts/dnsmasq.postconf && echo_date "创建dnsmasq.postconf软链接" >> $LOG_FILE
 			sh /koolshare/merlinclash/clashconfig.sh quicklyrestart >> /tmp/upload/merlinclash_log.txt
 		else
-			rm -rf /jffs/scripts/dnsmasq.postconf
+#			rm -rf /jffs/scripts/dnsmasq.postconf
 			prepare
 			sed -i '$a no-resolv' /etc/dnsmasq.conf
 			sed -i '$a servers-file=/tmp/resolv.dnsmasq' /etc/dnsmasq.conf
