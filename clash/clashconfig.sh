@@ -4632,7 +4632,7 @@ create_dnsmasq_gfw_ipt(){
 	# iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port "$proxy_port"
 	gen_dnsmasq_gfw
 	add_cidr_proxy
-	echo_date "dnsmasq分流配置创建成功，ipset创建成功$gfw_ipset," >> $LOG_FILE
+	echo_date "dnsmasq分流配置创建成功，ipset创建成功" >> $LOG_FILE
 }
 
 #开始添加需要走代理的ip-cidr
