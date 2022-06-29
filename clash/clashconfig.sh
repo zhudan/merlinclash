@@ -20,6 +20,14 @@ get_list(){
 	b=$(echo $(dbus list $1 | cut -d "=" -f $2 | cut -d "_" -f $3 | sort -n))
 	echo $b
 }
+
+#DNS后置采用dnsmasq+gfw分流模式
+#分流出来的流量根据ipset重定向到clash redir-port
+update_dnsmasq_clash_sh='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/master/gfwlist2dnsmasq.sh'
+dns_ip='127.0.0.1'
+gfw_ipset='gfwlist'
+
+
 yamlname=$(get merlinclash_yamlsel)
 mcenable=$(get merlinclash_enable)
 kpenable=$(get merlinclash_koolproxy_enable)
@@ -535,6 +543,7 @@ kill_clash() {
 }
 flush_nat() {
 	echo_date 清除iptables规则... >> $LOG_FILE
+	del_dnsmasq_gfw_ipt
 	# flush rules and set if any
 	iptables -t nat -D PREROUTING -p udp -d 8.8.4.4 --dport 53 -j REDIRECT --to-port 53 >/dev/null 2>&1
 	iptables -t nat -D PREROUTING -p udp -d 8.8.8.8 --dport 53 -j REDIRECT --to-port 53 >/dev/null 2>&1
@@ -1922,6 +1931,15 @@ creat_ipset() {
 		echo_date "加载ip_set_bitmap_port.ko内核模块！"
 		modprobe ip_set_bitmap_port
 	fi
+
+  #dnsmasq分流
+	if [ "$dnshijacksel" == "rear" ];then
+	  create_dnsmasq_gfw_ipt
+	  return 0
+  else
+    echo_date 你已关闭dnsmasq dns分流 >> $LOG_FILE
+  fi
+
 	[ -n "$IFIP_DNS1" ] && ISP_DNS_a="$ISP_DNS1" || ISP_DNS_a=""
 	[ -n "$IFIP_DNS2" ] && ISP_DNS_b="$ISP_DNS2" || ISP_DNS_a=""
 	[ -n "$IFIP_DHCPDNS1" ] && ISP_DNS_c="$DHCP_DNS1" || ISP_DNS_c=""
@@ -2232,7 +2250,7 @@ apply_nat_rules3() {
 		iptables -t nat -N merlinclash_NOR
 		echo_date "创建【nat】表【merlinclash_NOR】链" >> $LOG_FILE
 		#ip集强制代理
-		iptables -t nat -A merlinclash_NOR -p tcp -m set --match-set ipset_proxy dst -j REDIRECT --to-ports $proxy_port
+		iptables -t nat -A   -p tcp -m set --match-set ipset_proxy dst -j REDIRECT --to-ports $proxy_port
 		iptables -t nat -A merlinclash_NOR -p tcp -j REDIRECT --to-ports $proxy_port
 		# 创建redirhost大陆白名单模式nat rule
 		
@@ -4588,6 +4606,35 @@ set_patchmode(){
 	curl -sv -H "Authorization: Bearer $secret" -X DELETE "http://$lan_ipaddr:$ecport/connections" >/dev/null 2>&1 &
 	echo_date "设置完成" >> $LOG_FILE
 }
+
+#创建转发规则
+create_dnsmasq_gfw_ipt(){
+  echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析，开始下载执行脚本 >> $LOG_FILE
+	#创建名为gfwlist，格式为iphash的集合
+	ipset -N $gfw_ipset iphash
+	#匹配gfwlist中ip的nat流量均被转发到clash端口
+	iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+	#匹配gfwlist中ip的本机流量均被转发到shadowsocks端口
+	# iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port "$proxy_port"
+	gen_dnsmasq_gfw
+	echo_date "dnsmasq分流配置创建成功，ipset创建成功$gfw_ipset," >> $LOG_FILE
+}
+#清除创建规则
+del_dnsmasq_gfw_ipt(){
+  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+  ipset -F $gfw_ipset >/dev/null 2>&1 && ipset -X $gfw_ipset >/dev/null 2>&1
+}
+#后置dns, 更新dnsmasq的gfw域名列表并且指向到clash的dns
+gen_dnsmasq_gfw(){
+	curl -s "$update_dnsmasq_clash_sh" -m 10 --connect-timeout 10 | bash -s gen $dns_ip $dnslistenport $gfw_ipset
+}
+#删除dnsmasq的gfw配置文件
+del_dnsmasq_gfw(){
+	echo_date 删除gfw列表 >> $LOG_FILE
+	curl -s "$update_dnsmasq_clash_sh" -m 10 --connect-timeout 10 | bash -s del
+	echo_date 删除gfw列表完成 >> $LOG_FILE
+}
+
 apply_mc() {
 	# router is on boot
 	
@@ -4598,6 +4645,7 @@ apply_mc() {
 	echo_date --------------------- 检查是否存冲突插件 ----------------------- >> $LOG_FILE
 	check_ss
 	echo_date ---------------------- 重启dnsmasq -------------------------- >> $LOG_FILE
+	del_dnsmasq_gfw
 	restart_dnsmasq
 	echo_date ----------------------- 结束相关进程--------------------------- >> $LOG_FILE
 	kill_process
@@ -4662,14 +4710,14 @@ apply_mc() {
 	pre_netflix_nslookup
 	echo_date ----------------- 预解析NETFLIX和DISNEY+ 结束-------------------- >> $LOG_FILE
 	echo_date ""
-	echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
-	creat_router_ipset
-	echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
-	echo_date ""
-	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
-	[ "$closeproxy" == "0" ] && load_nat
-	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
-	echo_date ""
+#	echo_date --------------------- 创建router_ipset集 开始------------------------ >> $LOG_FILE
+#	creat_router_ipset
+#	echo_date --------------------- 创建router_ipset集 结束------------------------ >> $LOG_FILE
+#	echo_date ""
+#	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 开始------------------------ >> $LOG_FILE
+#	[ "$closeproxy" == "0" ] && load_nat
+#	[ "$closeproxy" == "0" ] && echo_date --------------------- 创建iptables规则 结束------------------------ >> $LOG_FILE
+#	echo_date ""
 	#----------------------------------KCP进程--------------------------------
 	echo_date ---------------------- KCP设置检查区 开始 ------------------------ >> $LOG_FILE
 	start_kcp

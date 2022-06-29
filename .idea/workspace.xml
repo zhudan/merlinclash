@@ -2,37 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4fe29574-af43-4f9e-8961-18e4a3389d7e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/Icon.3ddc065b.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/Icon.48ce63a7.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/index.14340f1d.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/index.dddbe8ba.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/logo.0dc1c7df.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/razord/assets/vendor.4a7a512f.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/patch_version" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/clash_outputlog.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/setup.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/yaml_basic/tcp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clash/clashconfig.sh" beforeDir="false" afterPath="$PROJECT_DIR$/clash/clashconfig.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conf/dnsmasq.postconf" beforeDir="false" afterPath="$PROJECT_DIR$/conf/dnsmasq.postconf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dashboard/razord/CNAME" beforeDir="false" afterPath="$PROJECT_DIR$/dashboard/razord/CNAME" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dashboard/razord/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/dashboard/razord/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dashboard/razord/manifest.webmanifest" beforeDir="false" afterPath="$PROJECT_DIR$/dashboard/razord/manifest.webmanifest" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dashboard/razord/sw.js" beforeDir="false" afterPath="$PROJECT_DIR$/dashboard/razord/sw.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/res/mc-menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/res/mc-menu.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_config.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_config.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_delyamlsel.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_delyamlsel.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_downdata.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_downdata.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_downrule.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_downrule.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_getproxygroup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_getproxygroup.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_regular_update.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_regular_update.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_saveacls.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_saveacls.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_status.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_status.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/clash_updateyamlsel.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/clash_updateyamlsel.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webs/Module_merlinclash.asp" beforeDir="false" afterPath="$PROJECT_DIR$/webs/Module_merlinclash.asp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yaml_basic/host/default.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yaml_basic/host/default.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yaml_basic/sniffer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yaml_basic/sniffer.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yaml_dns/fakeip.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yaml_dns/fakeip.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,13 +99,26 @@
       <updated>1656469736201</updated>
       <workItem from="1656469737599" duration="24000" />
       <workItem from="1656469783689" duration="130000" />
+      <workItem from="1656469944813" duration="8018000" />
     </task>
+    <task id="LOCAL-00001" summary="merge">
+      <created>1656470114575</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1656470114575</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <option name="RELOAD_CONTEXT" value="false" />
+    <MESSAGE value="merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="merge" />
   </component>
 </project>
