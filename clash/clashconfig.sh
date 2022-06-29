@@ -20,14 +20,6 @@ get_list(){
 	b=$(echo $(dbus list $1 | cut -d "=" -f $2 | cut -d "_" -f $3 | sort -n))
 	echo $b
 }
-
-#DNS后置采用dnsmasq+gfw分流模式
-#分流出来的流量根据ipset重定向到clash redir-port
-update_dnsmasq_clash_sh='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/master/gfwlist2dnsmasq.sh'
-dns_ip='127.0.0.1'
-gfw_ipset='gfwlist'
-
-
 yamlname=$(get merlinclash_yamlsel)
 mcenable=$(get merlinclash_enable)
 kpenable=$(get merlinclash_koolproxy_enable)
@@ -4619,6 +4611,16 @@ set_patchmode(){
 	echo_date "设置完成" >> $LOG_FILE
 }
 
+
+#DNS后置采用dnsmasq+gfw分流模式
+#分流出来的流量根据ipset重定向到clash redir-port
+update_dnsmasq_clash_sh='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/master/gfwlist2dnsmasq.sh'
+proxy_cidr='https://ghproxy.com/https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt'
+dns_ip='127.0.0.1'
+gfw_ipset='gfwlist'
+
+
+
 #创建转发规则
 create_dnsmasq_gfw_ipt(){
   echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析，开始下载执行脚本 >> $LOG_FILE
@@ -4629,12 +4631,34 @@ create_dnsmasq_gfw_ipt(){
 	#匹配gfwlist中ip的本机流量均被转发到shadowsocks端口
 	# iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port "$proxy_port"
 	gen_dnsmasq_gfw
+	add_cidr_proxy
 	echo_date "dnsmasq分流配置创建成功，ipset创建成功$gfw_ipset," >> $LOG_FILE
+}
+
+#开始添加需要走代理的ip-cidr
+add_cidr_proxy(){
+  echo_date 开始添加需要走代理的ip-cidr
+  curl -s -k -o /tmp/cidr-tmp.txt $proxy_cidr
+  lines=$(cat /tmp/cidr-tmp.txt | awk '{print $0}')
+  for line in $lines
+  do
+    detect_ip ${line}
+    d=$?
+    if [ "$d" == "4" ]; then
+      #echo_date "为合法IPV4格式，进行处理" >> $LOG_FILE
+      ipset -! add $gfw_ipset ${line} >/dev/null 2>&1
+    elif [ "$d" == "6" ]; then
+      #echo_date "为合法IPV6格式，进行处理" >> $LOG_FILE
+      continue
+    fi
+  done
+  rm -rf /tmp/cidr-tmp.txt
 }
 #清除创建规则
 del_dnsmasq_gfw_ipt(){
   iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
   ipset -F $gfw_ipset >/dev/null 2>&1 && ipset -X $gfw_ipset >/dev/null 2>&1
+  rm -rf /tmp/cidr-tmp.txt
 }
 #后置dns, 更新dnsmasq的gfw域名列表并且指向到clash的dns
 gen_dnsmasq_gfw(){
@@ -4645,6 +4669,23 @@ del_dnsmasq_gfw(){
 	echo_date 删除gfw列表 >> $LOG_FILE
 	curl -s "$update_dnsmasq_clash_sh" -m 10 --connect-timeout 10 | bash -s del
 	echo_date 删除gfw列表完成 >> $LOG_FILE
+}
+
+detect_ip(){
+	IPADDR=$1
+	regex_v4="\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\b"
+	regex_v6="(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+	ckStep4=`echo $1 | egrep $regex_v4 | wc -l`
+	ckStep6=`echo $1 | egrep $regex_v6 | wc -l`
+	if [ $ckStep4 -eq 0 ]; then
+		if [ $ckStep6 -eq 0 ]; then
+			return 1
+		else
+			return 6
+		fi
+	else
+		return 4
+	fi
 }
 
 apply_mc() {
