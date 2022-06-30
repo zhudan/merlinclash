@@ -1922,17 +1922,17 @@ creat_ipset() {
 	if [ -z "`lsmod | grep ip_set_bitmap_port`" ] && [ -f "/lib/modules/4.1.27/kernel/net/netfilter/ipset/ip_set_bitmap_port.ko" ];then
 		echo_date "加载ip_set_bitmap_port.ko内核模块！"
 		modprobe ip_set_bitmap_port
-	fi
-
-  #dnsmasq分流，dns后置方案
-	if [ "$dnshijacksel" == "rear" ];then
-	  create_dnsmasq_gfw_ipt
-	  return 0
-  else
-    echo_date 你已关闭dnsmasq dns分流 >> $LOG_FILE
   fi
 
-	[ -n "$IFIP_DNS1" ] && ISP_DNS_a="$ISP_DNS1" || ISP_DNS_a=""
+  #dnsmasq分流，dns后置方案
+  if [ "$dnshijacksel" == "rear" ];then
+		create_dnsmasq_gfw_ipt
+		return 0
+  else
+		echo_date 你已关闭dnsmasq dns分流 >> $LOG_FILE
+  fi
+
+  [ -n "$IFIP_DNS1" ] && ISP_DNS_a="$ISP_DNS1" || ISP_DNS_a=""
 	[ -n "$IFIP_DNS2" ] && ISP_DNS_b="$ISP_DNS2" || ISP_DNS_a=""
 	[ -n "$IFIP_DHCPDNS1" ] && ISP_DNS_c="$DHCP_DNS1" || ISP_DNS_c=""
 	echo_date "创建内网绕行ipset规则集" >> $LOG_FILE
