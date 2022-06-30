@@ -4621,12 +4621,12 @@ gfw_cidr_ipset="gfw_cidr"
 
 #创建转发规则
 create_dnsmasq_gfw_ipt(){
-  echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析 >> $LOG_FILE
+	echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析 >> $LOG_FILE
 	#创建名为gfwlist，格式为iphash的集合
 	ipset -N $dnsmasq_gfw_ipset hash:ip timeout 1800
 	#匹配gfwlist中ip的nat流量均被转发到clash端口
 	iptables -t nat -A PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
-  iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
+	iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
 	#匹配gfwlist中ip的本机流量均被转发到shadowsocks端口
 	# iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port "$proxy_port"
 	download_dnsmasq_gfw
