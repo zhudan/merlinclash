@@ -4654,9 +4654,16 @@ download_dnsmasq_gfw(){
 #清除创建规则
 del_dnsmasq_gfw_ipt(){
 	echo_date 删除iptables和ipset >> $LOG_FILE
-  iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
-  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
-
+	ipset_indexs=$(iptables -t nat -vnL PREROUTING --line-number  | sed 1,2d | sed -n "/${dnsmasq_gfw_ipset}/=")
+  for ipset_index in $ipset_indexs; do
+    iptables -t nat -D PREROUTING $ipset_index >/dev/null 2>&1
+  done
+#  iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+#  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
+  ipset_indexs=$(iptables -t nat -vnL PREROUTING --line-number  | sed 1,2d | sed -n "/${gfw_cidr_ipset}/=")
+	for ipset_index in $ipset_indexs; do
+		iptables -t nat -D PREROUTING $ipset_index >/dev/null 2>&1
+	done
   ipset -F $dnsmasq_gfw_ipset >/dev/null 2>&1 && ipset -X $dnsmasq_gfw_ipset >/dev/null 2>&1
   ipset -F $gfw_cidr_ipset >/dev/null 2>&1 && ipset -X $gfw_cidr_ipset >/dev/null 2>&1
 	echo_date 删除iptables和ipset完成 >> $LOG_FILE
