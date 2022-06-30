@@ -4645,19 +4645,19 @@ add_cidr_proxy(){
   rm -rf /tmp/cidr-tmp.txt
   echo_date ip-cidr处理完成
 }
-#清除创建规则
-del_dnsmasq_gfw_ipt(){
-  iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
-  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
-  ipset -F $dnsmasq_gfw_ipset >/dev/null 2>&1 && ipset -X $dnsmasq_gfw_ipset >/dev/null 2>&1
-  ipset -F $gfw_cidr_ipset >/dev/null 2>&1 && ipset -X $gfw_cidr_ipset >/dev/null 2>&1
-}
 #后置dns, 更新dnsmasq的gfw域名列表并且指向到clash的dns
 download_dnsmasq_gfw(){
   echo_date "开始下载dnsmasq gfwlist: $gfw_conf"
   curl -s -k -o /tmp/gfw.conf $gfw_conf
   ln -snf /tmp/gfw.conf /jffs/configs/dnsmasq.d/gfw.conf
   echo_date "开始下载dnsmasq gfwlist下载完成，并且已经挂载到dnsmasq配置目录"
+}
+#清除创建规则
+del_dnsmasq_gfw_ipt(){
+  iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
+  ipset -F $dnsmasq_gfw_ipset >/dev/null 2>&1 && ipset -X $dnsmasq_gfw_ipset >/dev/null 2>&1
+  ipset -F $gfw_cidr_ipset >/dev/null 2>&1 && ipset -X $gfw_cidr_ipset >/dev/null 2>&1
 }
 #删除dnsmasq的gfw配置文件
 del_dnsmasq_gfw(){
