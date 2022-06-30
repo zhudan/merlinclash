@@ -4614,23 +4614,22 @@ set_patchmode(){
 
 #DNS后置采用dnsmasq+gfw分流模式
 #分流出来的流量根据ipset重定向到clash redir-port
-update_dnsmasq_clash_sh='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/master/gfwlist2dnsmasq.sh'
-proxy_cidr='https://ghproxy.com/https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/telegramcidr.txt'
-dns_ip='127.0.0.1'
-gfw_ipset='gfwlist'
-
-
+gfw_conf='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/gfw.conf'
+proxy_cidr='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/ip-cidr.ipset'
+dnsmasq_gfw_ipset="dnsmasq_gfw"
+gfw_cidr_ipset="gfw_cidr"
 
 #创建转发规则
 create_dnsmasq_gfw_ipt(){
-  echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析，开始下载执行脚本 >> $LOG_FILE
+  echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析 >> $LOG_FILE
 	#创建名为gfwlist，格式为iphash的集合
-	ipset -N $gfw_ipset iphash
+	ipset -N $dnsmasq_gfw_ipset hash:ip timeout 30
 	#匹配gfwlist中ip的nat流量均被转发到clash端口
-	iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+	iptables -t nat -A PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+  iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
 	#匹配gfwlist中ip的本机流量均被转发到shadowsocks端口
 	# iptables -t nat -A OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port "$proxy_port"
-	gen_dnsmasq_gfw
+	download_dnsmasq_gfw
 	add_cidr_proxy
 	echo_date "dnsmasq分流配置创建成功，ipset创建成功" >> $LOG_FILE
 }
@@ -4639,37 +4638,30 @@ create_dnsmasq_gfw_ipt(){
 add_cidr_proxy(){
   echo_date 开始添加需要走代理的ip-cidr
   curl -s -k -o /tmp/cidr-tmp.txt $proxy_cidr
-  sed -i "s/payload://g;s/  - //g;s/'//g;/^\s*$/d" /tmp/cidr-tmp.txt
-  lines=$(cat /tmp/cidr-tmp.txt | awk '{print $0}')
-  for line in $lines
-  do
-    detect_ip ${line}
-    d=$?
-    echo_date ${line}    $d
-    if [ "$d" == "4" ]; then
-      #echo_date "为合法IPV4格式，进行处理" >> $LOG_FILE
-      ipset -! add $gfw_ipset ${line} >/dev/null 2>&1
-    elif [ "$d" == "6" ]; then
-      #echo_date "为合法IPV6格式，进行处理" >> $LOG_FILE
-      continue
-    fi
-  done
+  ipset -R < /tmp/cidr-tmp.txt
   rm -rf /tmp/cidr-tmp.txt
+  echo_date ip-cidr处理完成
 }
+
 #清除创建规则
 del_dnsmasq_gfw_ipt(){
-  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
-  ipset -F $gfw_ipset >/dev/null 2>&1 && ipset -X $gfw_ipset >/dev/null 2>&1
-  rm -rf /tmp/cidr-tmp.txt
+  iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
+  iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
+  ipset -F $dnsmasq_gfw_ipset >/dev/null 2>&1 && ipset -X $dnsmasq_gfw_ipset >/dev/null 2>&1
+  ipset -F $gfw_cidr_ipset >/dev/null 2>&1 && ipset -X $gfw_cidr_ipset >/dev/null 2>&1
 }
 #后置dns, 更新dnsmasq的gfw域名列表并且指向到clash的dns
-gen_dnsmasq_gfw(){
-	curl -s "$update_dnsmasq_clash_sh" -m 10 --connect-timeout 10 | bash -s gen $dns_ip $dnslistenport $gfw_ipset
+download_dnsmasq_gfw(){
+	echo_date "开始下载dnsmasq gfwlist: $gfw_conf"
+	curl -s -k -o /tmp/gfw.conf $gfw_conf
+	ln -snf /tmp/gfw.conf /jffs/configs/dnsmasq.d/gfw.conf
+	echo_date "开始下载dnsmasq gfwlist下载完成，并且已经挂载到dnsmasq配置目录"
 }
 #删除dnsmasq的gfw配置文件
 del_dnsmasq_gfw(){
 	echo_date 删除gfw列表 >> $LOG_FILE
-	curl -s "$update_dnsmasq_clash_sh" -m 10 --connect-timeout 10 | bash -s del
+	rm -rf /jffs/configs/dnsmasq.d/gfw.conf
+	rm -rf /tmp/gfw.conf
 	echo_date 删除gfw列表完成 >> $LOG_FILE
 }
 
