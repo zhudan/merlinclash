@@ -4627,7 +4627,6 @@ create_dnsmasq_gfw_ipt(){
   ipset -N $dnsmasq_gfw_ipset hash:ip timeout 1800
   #匹配gfwlist中ip的nat流量均被转发到clash端口
   iptables -t nat -A PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
-  download_dnsmasq_gfw
 
   add_cidr_proxy
   iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
@@ -4654,11 +4653,13 @@ download_dnsmasq_gfw(){
 }
 #清除创建规则
 del_dnsmasq_gfw_ipt(){
+	echo_date 删除iptables和ipset >> $LOG_FILE
   iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
   iptables -t nat -D PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
 
   ipset -F $dnsmasq_gfw_ipset >/dev/null 2>&1 && ipset -X $dnsmasq_gfw_ipset >/dev/null 2>&1
   ipset -F $gfw_cidr_ipset >/dev/null 2>&1 && ipset -X $gfw_cidr_ipset >/dev/null 2>&1
+	echo_date 删除iptables和ipset完成 >> $LOG_FILE
 }
 #删除dnsmasq的gfw配置文件
 del_dnsmasq_gfw(){
@@ -4666,6 +4667,7 @@ del_dnsmasq_gfw(){
 	rm -rf /jffs/configs/dnsmasq.d/gfw.conf
 	rm -rf /tmp/gfw.conf
 	echo_date 删除gfw列表完成 >> $LOG_FILE
+	del_dnsmasq_gfw_ipt
 }
 
 apply_mc() {
@@ -4680,6 +4682,7 @@ apply_mc() {
 	echo_date ---------------------- 重启dnsmasq -------------------------- >> $LOG_FILE
 	del_dnsmasq_gfw
 	restart_dnsmasq
+	download_dnsmasq_gfw
 	echo_date ----------------------- 结束相关进程--------------------------- >> $LOG_FILE
 	kill_process
 	echo_date --------------------- 相关进程结束完毕 ------------------------ >> $LOG_FILE
