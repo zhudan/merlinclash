@@ -4623,7 +4623,7 @@ gfw_cidr_ipset="gfw_cidr"
 create_dnsmasq_gfw_ipt(){
   echo_date 已设置DNS后置，开启dnsmasq分流，dnsmasq转发gfw域名到clash dns端口进行解析 >> $LOG_FILE
 	#创建名为gfwlist，格式为iphash的集合
-	ipset -N $dnsmasq_gfw_ipset hash:ip timeout 30
+	ipset -N $dnsmasq_gfw_ipset hash:ip timeout 1800
 	#匹配gfwlist中ip的nat流量均被转发到clash端口
 	iptables -t nat -A PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
   iptables -t nat -A PREROUTING -p tcp -m set --match-set $gfw_cidr_ipset dst -j REDIRECT --to-port "$proxy_port"
@@ -4633,7 +4633,6 @@ create_dnsmasq_gfw_ipt(){
 	add_cidr_proxy
 	echo_date "dnsmasq分流配置创建成功，ipset创建成功" >> $LOG_FILE
 }
-
 #开始添加需要走代理的ip-cidr
 add_cidr_proxy(){
   echo_date 开始添加需要走代理的ip-cidr
@@ -4642,7 +4641,6 @@ add_cidr_proxy(){
   rm -rf /tmp/cidr-tmp.txt
   echo_date ip-cidr处理完成
 }
-
 #清除创建规则
 del_dnsmasq_gfw_ipt(){
   iptables -t nat -D PREROUTING -p tcp -m set --match-set $dnsmasq_gfw_ipset dst -j REDIRECT --to-port "$proxy_port"
@@ -4663,23 +4661,6 @@ del_dnsmasq_gfw(){
 	rm -rf /jffs/configs/dnsmasq.d/gfw.conf
 	rm -rf /tmp/gfw.conf
 	echo_date 删除gfw列表完成 >> $LOG_FILE
-}
-
-detect_ip(){
-	IPADDR=$1
-	regex_v4="((2[0-4][0-9]|25[0-5]|1[0-9][0-9]|[1-9]?[0-9])(\.(2[0-4][0-9]|25[0-5]|1[0-9][0-9]|[1-9]?[0-9])){3}(\/([1-9]|[1-2]\d|3[0-2])$)?)"
-	regex_v6="(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
-	ckStep4=`echo $1 | egrep $regex_v4 | wc -l`
-	ckStep6=`echo $1 | egrep $regex_v6 | wc -l`
-	if [ $ckStep4 -eq 0 ]; then
-		if [ $ckStep6 -eq 0 ]; then
-			return 1
-		else
-			return 6
-		fi
-	else
-		return 4
-	fi
 }
 
 apply_mc() {
