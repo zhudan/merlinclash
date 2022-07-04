@@ -536,6 +536,9 @@ kill_clash() {
 flush_nat() {
 	echo_date 清除iptables规则... >> $LOG_FILE
 	del_dnsmasq_gfw_ipt
+	# 清理socks端口
+	iptables -D INPUT -p tcp --dport $socksport -j ACCEPT
+	ip6tables -D INPUT -p tcp --dport $socksport -j ACCEPT
 	# flush rules and set if any
 	iptables -t nat -D PREROUTING -p udp -d 8.8.4.4 --dport 53 -j REDIRECT --to-port 53 >/dev/null 2>&1
 	iptables -t nat -D PREROUTING -p udp -d 8.8.8.8 --dport 53 -j REDIRECT --to-port 53 >/dev/null 2>&1
@@ -2139,6 +2142,9 @@ creat_router_ipset(){
 	#fi
 }
 load_nat() {
+  # 开启socks端口
+	iptables -I INPUT -p tcp --dport $socksport -j ACCEPT
+	ip6tables -I INPUT -p tcp --dport $socksport -j ACCEPT
 	#dnsmasq分流，dns后置方案
 	if [ "$dnshijacksel" == "rear" ];then
 	  echo_date 后置dns方案，跳过
