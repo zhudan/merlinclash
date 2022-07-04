@@ -551,6 +551,8 @@ flush_nat() {
 	iptables -t mangle -D PREROUTING -p udp -j merlinclash_divert >/dev/null 2>&1
 	iptables -t mangle -D PREROUTING -p udp --dport 53 -j RETURN >/dev/null 2>&1
 	ip6tables -t mangle -D PREROUTING -p udp --dport 53 -j RETURN >/dev/null 2>&1
+	#管理面板外网访问
+	iptables -D INPUT -p tcp --dport $ecport -j ACCEPT
     
     #iptables -t mangle -D PREROUTING -p tcp -m multiport --dport $merlinclash_nokpacl_default_port -j merlinclash_PREROUTING >/dev/null 2>&1
     #iptables -t mangle -D PREROUTING -p udp -m multiport --dport $merlinclash_nokpacl_default_port -j merlinclash_PREROUTING >/dev/null 2>&1
@@ -2253,7 +2255,7 @@ apply_nat_rules3() {
 		iptables -t nat -N merlinclash_NOR
 		echo_date "创建【nat】表【merlinclash_NOR】链" >> $LOG_FILE
 		#ip集强制代理
-		iptables -t nat -A   -p tcp -m set --match-set ipset_proxy dst -j REDIRECT --to-ports $proxy_port
+		iptables -t nat -A merlinclash_NOR -p tcp -m set --match-set ipset_proxy dst -j REDIRECT --to-ports $proxy_port
 		iptables -t nat -A merlinclash_NOR -p tcp -j REDIRECT --to-ports $proxy_port
 		# 创建redirhost大陆白名单模式nat rule
 		
