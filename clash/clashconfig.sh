@@ -4622,8 +4622,10 @@ set_patchmode(){
 
 #DNS后置采用dnsmasq+gfw分流模式
 #分流出来的流量根据ipset重定向到clash redir-port
-gfw_conf='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/gfw.conf'
-proxy_cidr='https://ghproxy.com/https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/ip-cidr.ipset'
+github_proxy="https://gh.api.99988866.xyz/"
+#github_proxy="https://ghproxy.com/"
+gfw_conf="${github_proxy}https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/gfw.conf"
+proxy_cidr='${github_proxy}https://raw.githubusercontent.com/zhudan/gfwlist2dnsmasq/hidden/ip-cidr.ipset'
 dnsmasq_gfw_ipset="dnsmasq_gfw"
 gfw_cidr_ipset="gfw_cidr"
 
