@@ -2,8 +2,8 @@
 
 github_proxy="https://gh.api.99988866.xyz/"
 #github_proxy="https://ghproxy.com/"
-clashconfig_file="${github_proxy}https://ghproxy.com/https://raw.githubusercontent.com/zhudan/merlinclash/master/clash/clashconfig.sh"
-clash_config_file="${github_proxy}https://ghproxy.com/https://raw.githubusercontent.com/zhudan/merlinclash/master/scripts/clash_config.sh"
+clashconfig_file="${github_proxy}https://raw.githubusercontent.com/zhudan/merlinclash/master/clash/clashconfig.sh"
+clash_config_file="${github_proxy}https://raw.githubusercontent.com/zhudan/merlinclash/master/scripts/clash_config.sh"
 
 bak(){
   bak_suffix=`date '+%Y%m%d%H%M%S'`
